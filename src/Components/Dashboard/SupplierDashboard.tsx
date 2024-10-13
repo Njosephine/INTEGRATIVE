@@ -4,28 +4,46 @@ import { Layout, Divider } from "antd";
 import { UserOutlined } from '@ant-design/icons';
 import SupplierSidebar from "./SupplierSidebar";
 import Orders from "./Orders";
-import OrderReports from "./OrderReports";
-import FullfiedOrders from "./FullfiedOrders"; 
+
+import FulfilledOrders from "./FulfilledOrders"; 
+import { Avatar, message, Upload } from "antd";
+import type { UploadChangeParam } from "antd/es/upload";
+
 
 
 const { Header, Sider } = Layout;
 
 const SupplierDashboard: React.FC = () => {
     const [selectedMenu, setSelectedMenu] = useState('Orders');
+    const [imageUrl, setImageUrl] = useState<string | undefined>(undefined);
     
 
     const handleMenuSelect = (menuKey: string) => {
         setSelectedMenu(menuKey);
     };
 
+     // Handle image upload
+     const handleUpload = (info: UploadChangeParam) => {
+        if (info.file.status === "uploading") {
+            message.loading({ content: "Uploading...", key: "upload" });
+            return;
+        }
+        if (info.file.status === "done") {
+            const imageUrl = URL.createObjectURL(info.file.originFileObj as Blob);
+            setImageUrl(imageUrl);
+            message.success({ content: "Image uploaded successfully!", key: "upload" });
+        } else if (info.file.status === "error") {
+            message.error({ content: "Image upload failed!", key: "upload" });
+        }
+    };
+
     const renderContent = () => {
         switch (selectedMenu) {
-            case 'orders':
+            case 'confirmed-orders':
                 return <Orders />;
-            case 'fullfilled-orders':
-                return <FullfiedOrders />;
-            case 'reports':
-                return <OrderReports />;
+            case 'fulfilled-orders':
+                return <FulfilledOrders />;
+            
             default:
                 return <Orders/>;
         }
@@ -33,24 +51,38 @@ const SupplierDashboard: React.FC = () => {
 
     return (
         <Layout style={{ minHeight: '100vh' }}>
-            <Sider
-                width={250} 
+           <Sider
+                width={250}
                 style={{
-                    background: '#fff',
-                    height: '100vh',
-                    position: 'fixed',
+                    background: "#fff",
+                    height: "100vh",
+                    position: "fixed",
                     left: 0,
                     top: 0,
                     zIndex: 2,
                 }}
             >
-                <div style={{ paddingTop: '80px', textAlign: 'center' }}>
-                    <UserOutlined style={{ fontSize: '40px', color: '#1890ff' }} />
-                    <Divider style={{ backgroundColor: 'black' }} />
+                <div style={{ paddingTop: "30px", textAlign: "center" }}>
+                    {/* Upload Button for Profile Image wrapped around Avatar */}
+                    <Upload
+                        name="profile-image"
+                        showUploadList={false}
+                        action="http://localhost:5000/api/upload" // API endpoint for uploading the image
+                        onChange={handleUpload}
+                        accept=".jpg,.png"
+                    >
+                        <Avatar 
+                            src={imageUrl} 
+                            size={80} 
+                            icon={<UserOutlined />} 
+                            style={{ cursor: "pointer" }} 
+                        />
+                    </Upload>
+
+                    <Divider style={{ backgroundColor: "black", marginTop: '20px' }} />
                     <SupplierSidebar onMenuSelect={handleMenuSelect} />
                 </div>
             </Sider>
-
             <Layout style={{ marginLeft: 240 }}>
                 <Header
                     style={{

@@ -1,7 +1,8 @@
-import React  from 'react';
-import { Form, Input, Button, Select, message } from 'antd';
+import React, {useState} from 'react';
+import { Form, Input, Button, Select, message, Upload } from 'antd';
+import { UploadOutlined } from '@ant-design/icons';
 import axios from 'axios';
-
+import { UploadFile } from 'antd/es/upload/interface';
 interface UserFormValues {
   userID: string;
   firstName: string;
@@ -9,15 +10,31 @@ interface UserFormValues {
   email: string;
   password: string;
   username: string;
-  role: string; // Role can be either 'Supplier' or 'Salesperson'
-}
+  role: string; 
+  image?: File; 
+   status: string;
+  }
 
 const AddUser: React.FC = () => {
   const [form] = Form.useForm<UserFormValues>();
+  const [fileList, setFileList] = useState<UploadFile[]>([]); 
   
   // Function to handle form submission
   const onFinish = async (values: UserFormValues) => {
-    console.log('Received values:', values);
+  const formData = new FormData();
+    
+    formData.append('userID', values.userID);
+    formData.append('firstName', values.firstName);
+    formData.append('lastName', values.lastName);
+    formData.append('email', values.email);
+    formData.append('username', values.username);
+    formData.append('password', values.password);
+    formData.append('role', values.role);
+    formData.append('status', values.status);
+    
+    if (fileList.length > 0) {
+      formData.append('image', fileList[0].originFileObj as File); // Attach the image to the form data
+    }
     
     try {
       await axios.post('http://localhost:5000/api/users', values); 
@@ -27,6 +44,12 @@ const AddUser: React.FC = () => {
       message.error('Failed to add user');
     }
   };
+
+  // Function to handle image upload change
+ const handleUploadChange = ({ fileList }: { fileList: UploadFile[] }) => {
+    setFileList(fileList);
+  };
+
 
   return (
     <Form 
@@ -131,6 +154,32 @@ const AddUser: React.FC = () => {
           <Select.Option value="Salesperson">Salesperson</Select.Option>
         </Select>
       </Form.Item>
+        
+        {/* Status */}
+      <Form.Item
+        name="status"
+        label="Status"
+        rules={[{ required: true, message: 'Please select the status' }]}
+      >
+        <Select placeholder="Select status">
+          <Select.Option value="Active">Active</Select.Option>
+          <Select.Option value="Inactive">Inactive</Select.Option>
+        </Select>
+      </Form.Item>
+
+      {/* Image Upload */}
+      <Form.Item label="Profile Image" valuePropName="fileList">
+        <Upload
+          listType="picture"
+          fileList={fileList}
+          beforeUpload={() => false} // Prevent automatic upload
+          onChange={handleUploadChange}
+          maxCount={1} // Allow only 1 image
+        >
+          <Button icon={<UploadOutlined />}>Upload Image</Button>
+        </Upload>
+      </Form.Item>
+
 
       {/* Submit Button */}
       <Form.Item>

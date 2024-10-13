@@ -1,5 +1,8 @@
 import { Menu } from "antd";
-import { DashboardOutlined, FileTextOutlined,CheckCircleOutlined} from '@ant-design/icons'
+import { DashboardOutlined,  CheckCircleOutlined, FileDoneOutlined} from '@ant-design/icons'
+
+
+const { SubMenu } = Menu;
 
 interface SupplierSidebarProps {
     onMenuSelect: (menuKey: string) => void; // Function type that takes a string
@@ -18,18 +21,18 @@ const Sidebar: React.FC<SupplierSidebarProps> = (props) => {
             <Menu
                 mode="inline"
                 defaultSelectedKeys={['orders']}
-                style={{ fontSize: '15px', textTransform: 'uppercase'}}
+                style={{ fontSize: '13px', textTransform: 'uppercase'}}
+            
             >
-                 <Menu.Item key="orders"  icon={<DashboardOutlined />}   style={{ marginBottom: '40px' }} onClick={() => handleMenuClick('orders')}>
-                   Orders
-                </Menu.Item>
+                 <SubMenu key="orders" icon={< DashboardOutlined/>} title="Orders" style={{ marginBottom: '40px' }}>
+                    <Menu.Item key="confirmed-orders" icon={<CheckCircleOutlined/>} onClick={() => handleMenuClick('confirmed-orders')}>
+                        Confirmed Orders
+                    </Menu.Item>
+                    <Menu.Item key="fulfilled-orders" icon={<FileDoneOutlined  />} onClick={() => handleMenuClick('fulfilled-orders')}>
+                    Fulfilled Orders
+                    </Menu.Item>
+                </SubMenu>
                
-                <Menu.Item key="fullfilled-orders" icon={<FileTextOutlined />} style={{ marginBottom: '40px' }} onClick={() => handleMenuClick('fullfied-orders')}>
-                   Fullfied Orders
-                </Menu.Item>
-                <Menu.Item key="reports"  icon={< CheckCircleOutlined />} style={{ marginBottom: '40px' }} onClick={() => handleMenuClick('reports')}>
-                   Reports
-                </Menu.Item>
             </Menu>
         </div>
     );

@@ -1,8 +1,10 @@
 import React, { useState } from "react";
-import { Layout, Divider } from "antd";
 import { UserOutlined } from '@ant-design/icons';
-import AdminSidebar from "./AdminSidebar";
+import AdminSidebar from "./AdminSidebar"; // Ensure the component name is correct
+import { Layout, Divider, Avatar, message, Upload } from "antd";
+import type { UploadChangeParam } from "antd/es/upload";
 import AddUser from "./AddUser";
+import UserList from "./UserList";
 import ViewReports from "./ViewReports";
 import ConfirmOrders from "./ConfirmOrders";
 import DashboardOverview from "./DashboardOverview";
@@ -11,17 +13,35 @@ const { Header, Sider, Content } = Layout;
 
 const AdminDashboard: React.FC = () => {
     const [selectedMenu, setSelectedMenu] = useState('DashboardOverview');
+    const [imageUrl, setImageUrl] = useState<string | undefined>(undefined); // State for uploaded image URL
 
     const handleMenuSelect = (menuKey: string) => {
         setSelectedMenu(menuKey);
     };
 
+    // Handle image upload
+    const handleUpload = (info: UploadChangeParam) => {
+        if (info.file.status === "uploading") {
+            message.loading({ content: "Uploading...", key: "upload" });
+            return;
+        }
+        if (info.file.status === "done") {
+            const imageUrl = URL.createObjectURL(info.file.originFileObj as Blob);
+            setImageUrl(imageUrl);
+            message.success({ content: "Image uploaded successfully!", key: "upload" });
+        } else if (info.file.status === "error") {
+            message.error({ content: "Image upload failed!", key: "upload" });
+        }
+    };
+
     const renderContent = () => {
         switch (selectedMenu) {
-            case 'Dashboard':
+            case 'DashboardOverview':
                 return <DashboardOverview />;
             case 'add-user':
-                return <AddUser/>;
+                return <AddUser />;
+            case 'list-users':
+                return <UserList />;
             case 'view-reports':
                 return <ViewReports />;
             case 'confirm-orders':
@@ -33,21 +53,35 @@ const AdminDashboard: React.FC = () => {
 
     return (
         <Layout style={{ minHeight: '100vh' }}>
-            {/* Sidebar */}
             <Sider
                 width={250}
                 style={{
-                    background: '#fff',
-                    height: '100vh',
-                    position: 'fixed',
+                    background: "#fff",
+                    height: "100vh",
+                    position: "fixed",
                     left: 0,
                     top: 0,
                     zIndex: 2,
                 }}
             >
-                <div style={{ paddingTop: '80px', textAlign: 'center' }}>
-                    <UserOutlined style={{ fontSize: '40px', color: '#1890ff' }} />
-                    <Divider style={{ backgroundColor: 'black' }} />
+                <div style={{ paddingTop: "30px", textAlign: "center" }}>
+                    {/* Upload Button for Profile Image wrapped around Avatar */}
+                    <Upload
+                        name="profile-image"
+                        showUploadList={false}
+                        action="http://localhost:5000/api/upload" // API endpoint for uploading the image
+                        onChange={handleUpload}
+                        accept=".jpg,.png"
+                    >
+                        <Avatar 
+                            src={imageUrl} 
+                            size={80} 
+                            icon={<UserOutlined />} 
+                            style={{ cursor: "pointer" }} 
+                        />
+                    </Upload>
+
+                    <Divider style={{ backgroundColor: "black", marginTop: '20px' }} />
                     <AdminSidebar onMenuSelect={handleMenuSelect} />
                 </div>
             </Sider>

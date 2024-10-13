@@ -4,33 +4,35 @@ import { Table, message } from 'antd';
 interface Order {
     orderID: number;
     quantityOrdered: number;
-    productName: number;
+    supplierID: number;
+    userID: number;
+    productID: number;
     orderDate: string;
     status: string; 
 }
 
-const ConfirmedOrders: React.FC = () => {
+const FulfilledOrders: React.FC = () => {
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
-        const fetchConfirmedOrders = async () => {
+        const fetchFulfilledOrders = async () => {
             try {
                 setLoading(true);
                 const response = await fetch('http://localhost:5000/api/supplier-orders'); // API endpoint for all supplier's orders
                 const data = await response.json();
 
-                // Filter the orders to get only those with status 'Confirmed'
-                const confirmedOrders = data.filter((order: Order) => order.status === 'Confirmed');
-                setOrders(confirmedOrders);
+                // Filter the orders to get only those with status 'Fulfilled'
+                const fulfilledOrders = data.filter((order: Order) => order.status === 'Fulfilled');
+                setOrders(fulfilledOrders);
             } catch {
-                message.error('Failed to fetch confirmed orders');
+                message.error('Failed to fetch fulfilled orders');
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchConfirmedOrders();
+        fetchFulfilledOrders();
     }, []);
 
     const columns = [
@@ -41,8 +43,8 @@ const ConfirmedOrders: React.FC = () => {
         },
         {
             title: 'Product',
-            dataIndex: 'productName', 
-            key: 'productName',
+            dataIndex: 'productID', 
+            key: 'productID',
         },
         {
             title: 'Quantity',
@@ -63,7 +65,7 @@ const ConfirmedOrders: React.FC = () => {
 
     return (
         <div>
-            <h2>Confirmed Orders</h2>
+            <h2>Fulfilled Orders</h2>
             <Table 
                 dataSource={orders} 
                 columns={columns} 
@@ -74,4 +76,4 @@ const ConfirmedOrders: React.FC = () => {
     );
 };
 
-export default ConfirmedOrders;
+export default FulfilledOrders;
