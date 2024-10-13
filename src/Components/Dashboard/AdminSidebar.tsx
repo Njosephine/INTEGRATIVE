@@ -4,8 +4,12 @@ import {
     DashboardOutlined,
     UserOutlined,
     FileTextOutlined,
-    CheckCircleOutlined
+    CheckCircleOutlined,
+    PlusOutlined,
+    UnorderedListOutlined 
 } from '@ant-design/icons';
+
+const { SubMenu } = Menu;
 
 interface SidebarProps {
     onMenuSelect: (menuKey: string) => void; // Function type that takes a string
@@ -29,9 +33,15 @@ const Sidebar: React.FC<SidebarProps> = (props) => {
                  <Menu.Item key="Dashboard"  icon={<DashboardOutlined />}   style={{ marginBottom: '40px' }} onClick={() => handleMenuClick('dashboard')}>
                    Dashboard
                 </Menu.Item>
-                <Menu.Item key="manage-users" icon={<UserOutlined />} style={{ marginBottom: '40px' }} onClick={() => handleMenuClick('manage-users')}>
-                    Manage Users
-                </Menu.Item>
+               {/* Sub-menu for managing Users */}
+               <SubMenu key="manage-users" icon={< UserOutlined />} title="Manage Users" style={{ marginBottom: '40px' }}>
+                    <Menu.Item key="add-user" icon={<PlusOutlined />} onClick={() => handleMenuClick('add-user')}>
+                        Add Users
+                    </Menu.Item>
+                    <Menu.Item key="list-users" icon={<UnorderedListOutlined />} onClick={() => handleMenuClick('list-users')}>
+                        User List
+                    </Menu.Item>
+                </SubMenu>
                 <Menu.Item key="view-reports" icon={<FileTextOutlined />} style={{ marginBottom: '40px' }} onClick={() => handleMenuClick('view-reports')}>
                     View Reports
                 </Menu.Item>

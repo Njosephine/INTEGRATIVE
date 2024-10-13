@@ -1,8 +1,7 @@
 import React, { useState } from "react";
-import { Layout,Divider } from "antd";
-import { UserOutlined, UploadOutlined} from '@ant-design/icons';
-import { Avatar, message, Upload, Button } from 'antd';
-import type { UploadChangeParam } from 'antd/es/upload';
+import { Layout, Divider, Avatar, message, Upload } from "antd";
+import { UserOutlined } from "@ant-design/icons";
+import type { UploadChangeParam } from "antd/es/upload";
 import SalesSideBar from "./SalesSideBar";
 import ManageSales from "./ManageSales";
 import ManageProducts from "./ManageProducts";
@@ -13,13 +12,11 @@ import AddProduct from "./AddProduct";
 import ProductList from "./ProductList";
 import OrderList from "./OrderList";
 
-
 const { Header, Sider } = Layout;
 
 const SalesDashboard: React.FC = () => {
-    const [selectedMenu, setSelectedMenu] = useState('ManageSales');
-    const [imageUrl, setImageUrl] = useState<string | null>(null); 
-    
+    const [selectedMenu, setSelectedMenu] = useState("ManageSales");
+    const [imageUrl, setImageUrl] = useState<string | null>(null);
 
     const handleMenuSelect = (menuKey: string) => {
         setSelectedMenu(menuKey);
@@ -27,46 +24,40 @@ const SalesDashboard: React.FC = () => {
 
     // Handle image upload
     const handleUpload = (info: UploadChangeParam) => {
-        if (info.file.status === 'uploading') {
-            message.loading({ content: 'Uploading...', key: 'upload' });
+        if (info.file.status === "uploading") {
+            message.loading({ content: "Uploading...", key: "upload" });
             return;
         }
-        if (info.file.status === 'done') {
+        if (info.file.status === "done") {
             // Use the originFileObj to create a URL for the uploaded image
             const imageUrl = URL.createObjectURL(info.file.originFileObj as Blob);
             setImageUrl(imageUrl);
-            message.success({ content: 'Image uploaded successfully!', key: 'upload' });
-        } else if (info.file.status === 'error') {
-            message.error({ content: 'Image upload failed!', key: 'upload' });
+            message.success({ content: "Image uploaded successfully!", key: "upload" });
+        } else if (info.file.status === "error") {
+            message.error({ content: "Image upload failed!", key: "upload" });
         }
     };
 
     const renderContent = () => {
         switch (selectedMenu) {
-            case 'add-sale': // this matches the key from SalesSideBar
-            return <AddSales />
-
-            case 'list-sales': 
-            return <SaleList />;
-
-            case 'add-product':
-            return <AddProduct />;
-
-            case 'list-products': 
-            return <ProductList />;
-
-            case 'create-orders': 
-            return <AddOrder />;
-
-            case 'view-orders': 
-            return <OrderList />;
-            case 'manage-sales':
+            case "add-sale":
+                return <AddSales />;
+            case "list-sales":
+                return <SaleList />;
+            case "add-product":
+                return <AddProduct />;
+            case "list-products":
+                return <ProductList />;
+            case "create-orders":
+                return <AddOrder />;
+            case "view-orders":
+                return <OrderList />;
+            case "manage-sales":
                 return <ManageSales />;
-            case 'manage-products':
+            case "manage-products":
                 return <ManageProducts />;
-         
             default:
-                return < ManageSales/>;
+                return <ManageSales />;
         }
     };
 
@@ -84,24 +75,24 @@ const SalesDashboard: React.FC = () => {
                 }}
             >
                 <div style={{ paddingTop: "30px", textAlign: "center" }}>
-                    {/* Display user profile image or placeholder */}
-                    {imageUrl ? (
-                        <Avatar src={imageUrl} size={80} />
-                    ) : (
-                        <Avatar size={80} icon={<UserOutlined />} />
-                    )}
-                    
-                    {/* Upload Button for Profile Image */}
+                    {/* Upload Button for Profile Image wrapped around Avatar */}
                     <Upload
                         name="profile-image"
                         showUploadList={false}
                         action="http://localhost:5000/api/upload" // API endpoint for uploading the image
                         onChange={handleUpload}
                         accept=".jpg,.png"
+                        beforeUpload={() => {
+                            // Optionally restrict uploads, return false to prevent upload
+                            return true; // Allow all uploads
+                        }}
                     >
-                        <Button icon={<UploadOutlined />} style={{ marginTop: '10px' }}>
-                            Upload Profile Image
-                        </Button>
+                        <Avatar 
+                            src={imageUrl ? imageUrl : undefined} 
+                            size={80} 
+                            icon={<UserOutlined />} 
+                            style={{ cursor: "pointer" }} 
+                        />
                     </Upload>
 
                     <Divider style={{ backgroundColor: "black", marginTop: '20px' }} />
