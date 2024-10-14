@@ -38,7 +38,7 @@ const AddProducts: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [users, setUsers] = useState<User[]>([]);
-  const [imageFile, setImageFile] = useState<File | null>(null); // State to hold the uploaded image
+  const [imageFile, setImageFile] = useState<File | null>(null); 
 
   // Fetch categories, suppliers, and users from the API
   useEffect(() => {
@@ -103,8 +103,8 @@ const AddProducts: React.FC = () => {
         },
       });
       message.success('Product added successfully!');
-      form.resetFields(); // Reset form after submission
-      setImageFile(null); // Reset image file
+      form.resetFields(); 
+      setImageFile(null); 
     } catch {
       message.error('Failed to add product');
     }
@@ -193,12 +193,12 @@ const AddProducts: React.FC = () => {
 
       {/* Purchase Price */}
       <Form.Item name="purchasePrice" label="Purchase Price" rules={[{ required: true, message: 'Please enter the purchase price' }]}>
-        <InputNumber min={0} style={{ width: '100%', height: '40px', fontSize: '16px' }} placeholder="Enter purchase price" formatter={(value) => `$ ${value}`} />
+        <InputNumber min={0} style={{ width: '100%', height: '40px', fontSize: '16px' }} placeholder="Enter purchase price" formatter={(value) => `${value}` } />
       </Form.Item>
 
       {/* Selling Price */}
       <Form.Item name="sellingPrice" label="Selling Price" rules={[{ required: true, message: 'Please enter the selling price' }]}>
-        <InputNumber min={0} style={{ width: '100%', height: '40px', fontSize: '16px' }} placeholder="Enter selling price" formatter={(value) => `$ ${value}`} />
+        <InputNumber min={0} style={{ width: '100%', height: '40px', fontSize: '16px' }} placeholder="Enter selling price" formatter={(value) =>  `${value}`} />
       </Form.Item>
 
     
@@ -208,13 +208,13 @@ const AddProducts: React.FC = () => {
           name="image"
           listType="picture"
           accept="image/*"
-          customRequest={() => {}} // Custom handler to prevent auto-upload
+          customRequest={() => {}} 
           beforeUpload={(file) => {
-            setImageFile(file); // Set the image file before upload
-            return false; // Prevent automatic upload
+            setImageFile(file); 
+            return false; 
           }}
         >
-          <Button icon={<UploadOutlined />}>Click to Upload Image</Button>
+          <Button icon={<UploadOutlined />}>Upload Image</Button>
         </Upload>
       </Form.Item>
 
@@ -228,4 +228,4 @@ const AddProducts: React.FC = () => {
   );
 };
 
-export default AddProducts;
+export default AddProducts

@@ -12,7 +12,7 @@ interface UserFormValues {
   username: string;
   role: string; 
   image?: File; 
-   status: string;
+  status: string;
   }
 
 const AddUser: React.FC = () => {
@@ -33,13 +33,13 @@ const AddUser: React.FC = () => {
     formData.append('status', values.status);
     
     if (fileList.length > 0) {
-      formData.append('image', fileList[0].originFileObj as File); // Attach the image to the form data
+      formData.append('image', fileList[0].originFileObj as File);
     }
     
     try {
       await axios.post('http://localhost:5000/api/users', values); 
       message.success('User added successfully!');
-      form.resetFields(); // Reset form after submission
+      form.resetFields(); 
     } catch  {
       message.error('Failed to add user');
     }
@@ -172,9 +172,9 @@ const AddUser: React.FC = () => {
         <Upload
           listType="picture"
           fileList={fileList}
-          beforeUpload={() => false} // Prevent automatic upload
+          beforeUpload={() => false} 
           onChange={handleUploadChange}
-          maxCount={1} // Allow only 1 image
+          maxCount={1} 
         >
           <Button icon={<UploadOutlined />}>Upload Image</Button>
         </Upload>

@@ -122,7 +122,7 @@ const AddSales: React.FC = () => {
       >
         <Select 
           placeholder="Select payment status" 
-          style={{ height: '40px', fontSize: '16px' }} // Increased select size
+          style={{ height: '40px', fontSize: '16px' }} 
         >
           <Select.Option value="Paid">Paid</Select.Option>
           <Select.Option value="Pending">Pending</Select.Option>
