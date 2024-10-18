@@ -1,55 +1,66 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import { Form, Input, Button, Select, message, Upload } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { UploadFile } from 'antd/es/upload/interface';
+
 interface UserFormValues {
   userID: string;
-  firstName: string;
-  lastName: string;
-  email: string;
+  first_name: string;
+  last_name: string;
+  emailAddress: string;
   password: string;
-  username: string;
+  userName: string;
   role: string; 
-  image?: File; 
   status: string;
-  }
+  image?: File;
+}
 
 const AddUser: React.FC = () => {
   const [form] = Form.useForm<UserFormValues>();
-  const [fileList, setFileList] = useState<UploadFile[]>([]); 
-  
+  const [fileList, setFileList] = useState<UploadFile[]>([]);
+
   // Function to handle form submission
   const onFinish = async (values: UserFormValues) => {
-  const formData = new FormData();
-    
+    const formData = new FormData();
+
+    // Append form values to formData
     formData.append('userID', values.userID);
-    formData.append('firstName', values.firstName);
-    formData.append('lastName', values.lastName);
-    formData.append('email', values.email);
-    formData.append('username', values.username);
+    formData.append('first_name', values.first_name);
+    formData.append('last_name', values.last_name);
+    formData.append('emailAddress', values.emailAddress);
+    formData.append('userName', values.userName);
     formData.append('password', values.password);
     formData.append('role', values.role);
     formData.append('status', values.status);
-    
+
+    // Append image file if uploaded
     if (fileList.length > 0) {
       formData.append('image', fileList[0].originFileObj as File);
     }
-    
+
     try {
-      await axios.post('http://localhost:5000/api/users', values); 
+      // Post the formData to the API
+      await axios.post('http://localhost:4000/api/user/users', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      // Success message and form reset
       message.success('User added successfully!');
-      form.resetFields(); 
-    } catch  {
+      form.resetFields();
+      setFileList([]);
+    } catch (error) {
+      console.error(error);
       message.error('Failed to add user');
     }
   };
 
-  // Function to handle image upload change
- const handleUploadChange = ({ fileList }: { fileList: UploadFile[] }) => {
+  // Function to handle image upload changes
+  const handleUploadChange = ({ fileList }: { fileList: UploadFile[] }) => {
     setFileList(fileList);
   };
-
 
   return (
     <Form 
@@ -70,50 +81,38 @@ const AddUser: React.FC = () => {
         label="User ID" 
         rules={[{ required: true, message: 'Please enter user ID' }]}
       >
-        <Input 
-          placeholder="Enter user ID" 
-          style={{ height: '40px', fontSize: '15px' }} 
-        />
+        <Input placeholder="Enter user ID" style={{ height: '40px', fontSize: '15px' }} />
       </Form.Item>
 
       {/* First Name */}
       <Form.Item 
-        name="firstName" 
+        name="first_name" 
         label="First Name" 
         rules={[{ required: true, message: 'Please enter first name' }]}
       >
-        <Input 
-          placeholder="Enter first name" 
-          style={{ height: '40px', fontSize: '15px' }} 
-        />
+        <Input placeholder="Enter first name" style={{ height: '40px', fontSize: '15px' }} />
       </Form.Item>
 
       {/* Last Name */}
       <Form.Item 
-        name="lastName" 
+        name="last_name" 
         label="Last Name" 
         rules={[{ required: true, message: 'Please enter last name' }]}
       >
-        <Input 
-          placeholder="Enter last name" 
-          style={{ height: '40px', fontSize: '15px' }} 
-        />
+        <Input placeholder="Enter last name" style={{ height: '40px', fontSize: '15px' }} />
       </Form.Item>
 
       {/* Email */}
       <Form.Item 
-        name="email" 
+        name="emailAddress" 
         label="Email" 
         rules={[{ required: true, message: 'Please enter email' }, { type: 'email', message: 'Please enter a valid email' }]}
       >
-        <Input 
-          placeholder="Enter email" 
-          style={{ height: '40px', fontSize: '15px' }} 
-        />
+        <Input placeholder="Enter email" style={{ height: '40px', fontSize: '15px' }} />
       </Form.Item>
 
-       {/* Password */}
-       <Form.Item 
+      {/* Password */}
+      <Form.Item 
         name="password" 
         label="Password" 
         rules={[
@@ -121,41 +120,31 @@ const AddUser: React.FC = () => {
           { min: 6, message: 'Password must be at least 6 characters' }
         ]}
       >
-        <Input.Password 
-          placeholder="Enter password" 
-          style={{ height: '40px', fontSize: '15px' }} 
-        />
+        <Input.Password placeholder="Enter password" style={{ height: '40px', fontSize: '15px' }} />
       </Form.Item>
-
 
       {/* Username */}
       <Form.Item 
-        name="username" 
+        name="userName" 
         label="Username" 
         rules={[{ required: true, message: 'Please enter a username' }]}
       >
-        <Input 
-          placeholder="Enter username" 
-          style={{ height: '40px', fontSize: '15px' }} 
-        />
+        <Input placeholder="Enter username" style={{ height: '40px', fontSize: '15px' }} />
       </Form.Item>
 
-      {/* User Role */}
+      {/* Role */}
       <Form.Item
         name="role"
         label="User Role"
         rules={[{ required: true, message: 'Please select a user role' }]}
       >
-        <Select 
-          placeholder="Select user role" 
-          style={{ height: '40px', fontSize: '16px' }} 
-        >
+        <Select placeholder="Select user role" style={{ height: '40px', fontSize: '16px' }}>
           <Select.Option value="Supplier">Supplier</Select.Option>
           <Select.Option value="Salesperson">Salesperson</Select.Option>
         </Select>
       </Form.Item>
-        
-        {/* Status */}
+
+      {/* Status */}
       <Form.Item
         name="status"
         label="Status"
@@ -172,22 +161,17 @@ const AddUser: React.FC = () => {
         <Upload
           listType="picture"
           fileList={fileList}
-          beforeUpload={() => false} 
+          beforeUpload={() => false} // Prevent immediate upload
           onChange={handleUploadChange}
-          maxCount={1} 
+          maxCount={1} // Allow only one image
         >
           <Button icon={<UploadOutlined />}>Upload Image</Button>
         </Upload>
       </Form.Item>
 
-
       {/* Submit Button */}
       <Form.Item>
-        <Button 
-          type="primary" 
-          htmlType="submit" 
-          style={{ width: '100%', height: '40px', fontSize: '16px' }}
-        >
+        <Button type="primary" htmlType="submit" style={{ width: '100%', height: '40px', fontSize: '16px' }}>
           Add User
         </Button>
       </Form.Item>
