@@ -25,11 +25,7 @@ const productSchema = new mongoose.Schema({
     ref: 'Supplier',
     required: true,
   },
-  userID: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-  },
+ 
   quantityAvailable: {
     type: Number,
     required: true,

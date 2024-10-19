@@ -21,9 +21,9 @@ import multer from 'multer';
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: 'user_images',  // Folder in Cloudinary
+    folder: 'user_images',  
     // allowed_formats: ['jpg', 'png'],  // Allowed image formats
-    public_id: (req, file) => Date.now() + '-' + file.originalname, // Unique public ID for each file
+    public_id: (req, file) => Date.now() + '-' + file.originalname, 
   },
 });
 

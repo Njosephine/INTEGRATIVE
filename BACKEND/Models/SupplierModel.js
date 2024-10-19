@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const supplierSchema = new mongoose.Schema({
+const SupplierSchema = new mongoose.Schema({
     supplierID: {
       type: String,
       required: true,
@@ -35,6 +35,6 @@ const supplierSchema = new mongoose.Schema({
     
   }, { timestamps: true });
   
-  const supplierModel = mongoose.models.supplier || mongoose.model("supplier", supplierSchema);
-  export default supplierModel;
+  const SupplierModel = mongoose.models.Supplier || mongoose.model("Supplier", SupplierSchema);
+  export default SupplierModel;
   

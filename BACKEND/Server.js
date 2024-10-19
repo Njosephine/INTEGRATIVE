@@ -2,11 +2,12 @@ import express from "express"
 import cors from "cors"
 import "dotenv/config"
 import connectDB from "./Config/Mongodb.js"
-import connectCloudinary from "./Config/cloudinary.js"
+import {connectCloudinary} from "./Config/cloudinary.js"
 import ProductRouter from './Routes/ProductRouter.js';
 import CategoryRouter from './Routes/CategoryRouter.js';
 import UserRouter from './Routes/UserRouter.js';
 import SupplierRouter from './Routes/SupplierRouter.js';
+import multer from 'multer';
 
 
 //app config

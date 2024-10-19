@@ -1,12 +1,19 @@
 import express from 'express';
-import { getAllUsers, addUser } from '../Controllers/UserController.js';
+import { getAllUsers, addUser , updateUser, deleteUser,getTotalUsers } from '../Controllers/UserController.js';
+import { upload } from '../Middleware/multer.js';
+
 
 const router = express.Router();
 
 // Route to retrieve all categories
 router.get('/users', getAllUsers);
+router.put('/users/:id', updateUser);
+router.delete('/users/:id', deleteUser);
 
-// Route to add a new category
-router.post('/users', addUser);
+// GET total number of users
+router.get('/total', getTotalUsers);
+
+
+router.post('/users', upload.single('image'), addUser);
 
 export default router;
