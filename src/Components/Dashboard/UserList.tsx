@@ -6,14 +6,14 @@ const { Meta } = Card;
 const { Text } = Typography;
 
 interface User {
-  userID: number; // Ensure userID is required
+  _id: string;
   first_name: string;
   last_name: string;
   emailAddress: string;
   role: string;
   status: string;
   dateAdded: string;
-  imageUrl?: string;
+  image?: string; 
 }
 
 const UserList: React.FC = () => {
@@ -25,25 +25,25 @@ const UserList: React.FC = () => {
     const fetchUsers = async () => {
       try {
         const response = await axios.get<User[]>('http://localhost:4000/api/user/users');
+        console.log(response.data); 
         setUsers(response.data);
       } catch (error) {
         message.error('Failed to fetch users');
       }
     };
-
     fetchUsers();
   }, []);
 
   const handleEdit = (user: User) => {
-    setEditingUser({ ...user }); // Ensure user object is spread correctly
+    setEditingUser({ ...user });
     setIsModalVisible(true);
   };
 
-  const handleDelete = async (userId: number) => {
+  const handleDelete = async (userId: string) => {
     try {
-      await axios.delete(`http://localhost:5000/api/users/${userId}`);
+      await axios.delete(`http://localhost:4000/api/user/users/${userId}`);
       message.success('User deleted successfully');
-      setUsers(users.filter(user => user.userID !== userId));
+      setUsers(users.filter(user => user._id !== userId));
     } catch (error) {
       message.error('Failed to delete user');
     }
@@ -54,7 +54,7 @@ const UserList: React.FC = () => {
       <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'nowrap', overflowX: 'auto', padding: '20px', gap: '16px' }}>
         {users.map(user => (
           <Card
-            key={user.userID}
+            key={user._id}
             style={{
               width: '300px',
               borderRadius: '8px',
@@ -73,19 +73,19 @@ const UserList: React.FC = () => {
                 overflow: 'hidden',
                 borderRadius: '8px 8px 0 0',
               }}>
-                {user.imageUrl ? (
+                {user.image ? ( 
                   <img
                     alt={`${user.first_name} ${user.last_name}`}
-                    src={user.imageUrl}
+                    src={user.image} 
                     style={{
-                      width: '100%',
-                      height: '100%',
+                      width: '50%',
+                      height: '80%',
                       borderRadius: '50%',
                       objectFit: 'cover',
                     }}
                   />
                 ) : (
-                  <Avatar size={140} style={{ backgroundColor: '#fff', fontSize: '48px' }}>
+                  <Avatar size={100} style={{ backgroundColor: '#fff', fontSize: '48px' }}>
                     {user.first_name ? user.first_name[0] : '?'}
                     {user.last_name ? user.last_name[0] : '?'}
                   </Avatar>
@@ -94,7 +94,7 @@ const UserList: React.FC = () => {
             }
             actions={[
               <Button
-                key={`edit-${user.userID}`}
+                key={`edit-${user._id}`}
                 onClick={() => handleEdit(user)}
                 style={{
                   backgroundColor: '#1890ff',
@@ -108,14 +108,14 @@ const UserList: React.FC = () => {
                 Edit
               </Button>,
               <Popconfirm
-                key={`delete-${user.userID}`}
+                key={`delete-${user._id}`}
                 title="Are you sure you want to delete this user?"
-                onConfirm={() => handleDelete(user.userID)}
+                onConfirm={() => handleDelete(user._id)}
                 okText="Yes"
                 cancelText="No"
               >
                 <Button
-                  key={`delete-btn-${user.userID}`}
+                  key={`delete-btn-${user._id}`}
                   danger
                   style={{
                     backgroundColor: '#ff4d4f',
@@ -156,92 +156,92 @@ const UserList: React.FC = () => {
 
       {/* Edit User Modal */}
       <Modal
-  title="Edit User"
-  visible={isModalVisible}
-  onCancel={() => setIsModalVisible(false)}
-  footer={null}
->
-  <form
-    onSubmit={async (e) => {
-      e.preventDefault();
-      if (editingUser) {
-        const { userID, first_name, last_name, emailAddress } = editingUser;
-        // Ensure you include userID when sending the update
-        try {
-          await axios.put(`http://localhost:5000/api/users/${userID}`, { first_name, last_name, emailAddress });
-          message.success('User updated successfully');
-          setIsModalVisible(false);
-          // Update the users list after editing
-          const updatedUsers = users.map(user => 
-            user.userID === userID ? { ...user, first_name, last_name, emailAddress } : user
-          );
-          setUsers(updatedUsers);
-        } catch (error) {
-          message.error('Failed to update user');
-        }
-      }
-    }}
-    style={{ display: 'flex', flexDirection: 'column', gap: '16px' }} // Flexbox for layout
-  >
-    <div>
-      <label style={{ display: 'block', marginBottom: '8px' }}>First Name</label>
-      <input
-        type="text"
-        value={editingUser?.first_name || ''} // Use fallback value for controlled input
-        onChange={(e) => setEditingUser(prev => ({ ...prev!, first_name: e.target.value }))}
-        required
-        style={{
-          padding: '8px',
-          borderRadius: '4px',
-          border: '1px solid #d9d9d9',
-          outline: 'none',
-          transition: 'border-color 0.3s',
-        }}
-        onFocus={(e) => e.currentTarget.style.borderColor = '#1890ff'}
-        onBlur={(e) => e.currentTarget.style.borderColor = '#d9d9d9'}
-      />
-    </div>
-    <div>
-      <label style={{ display: 'block', marginBottom: '8px' }}>Last Name</label>
-      <input
-        type="text"
-        value={editingUser?.last_name || ''}
-        onChange={(e) => setEditingUser(prev => ({ ...prev!, last_name: e.target.value }))}
-        required
-        style={{
-          padding: '8px',
-          borderRadius: '4px',
-          border: '1px solid #d9d9d9',
-          outline: 'none',
-          transition: 'border-color 0.3s',
-        }}
-        onFocus={(e) => e.currentTarget.style.borderColor = '#1890ff'}
-        onBlur={(e) => e.currentTarget.style.borderColor = '#d9d9d9'}
-      />
-    </div>
-    <div>
-      <label style={{ display: 'block', marginBottom: '8px' }}>Email</label>
-      <input
-        type="email"
-        value={editingUser?.emailAddress || ''}
-        onChange={(e) => setEditingUser(prev => ({ ...prev!, emailAddress: e.target.value }))}
-        required
-        style={{
-          padding: '8px',
-          borderRadius: '4px',
-          border: '1px solid #d9d9d9',
-          outline: 'none',
-          transition: 'border-color 0.3s',
-        }}
-        onFocus={(e) => e.currentTarget.style.borderColor = '#1890ff'}
-        onBlur={(e) => e.currentTarget.style.borderColor = '#d9d9d9'}
-      />
-    </div>
-    {/* Add more fields as needed */}
-    <Button type="primary" htmlType="submit" style={{ alignSelf: 'flex-end' }}>Update</Button>
-  </form>
-</Modal>
+        title="Edit User"
+        open={isModalVisible} // Change this from `visible` to `open`
+        onCancel={() => setIsModalVisible(false)}
+        footer={null}
+      >
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            if (editingUser) {
+              const { _id, first_name, last_name, emailAddress } = editingUser;
 
+              try {
+                await axios.put(`http://localhost:4000/api/user/users/${_id}`, { first_name, last_name, emailAddress });
+                message.success('User updated successfully');
+                setIsModalVisible(false);
+                // Update the users list after editing
+                const updatedUsers = users.map(user =>
+                  user._id === _id ? { ...user, first_name, last_name, emailAddress } : user
+                );
+                setUsers(updatedUsers);
+              } catch (error) {
+                message.error('Failed to update user');
+              }
+            }
+          }}
+          style={{ display: 'flex', flexDirection: 'column', gap: '16px' }} 
+        >
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px' }}>First Name</label>
+            <input
+              type="text"
+              value={editingUser?.first_name || ''} 
+              onChange={(e) => setEditingUser(prev => ({ ...prev!, first_name: e.target.value }))}
+              required
+              style={{
+                padding: '8px',
+                borderRadius: '4px',
+                border: '1px solid #d9d9d9',
+                outline: 'none',
+                transition: 'border-color 0.3s',
+              }}
+              onFocus={(e) => e.currentTarget.style.borderColor = '#1890ff'}
+              onBlur={(e) => e.currentTarget.style.borderColor = '#d9d9d9'}
+            />
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px' }}>Last Name</label>
+            <input
+              type="text"
+              value={editingUser?.last_name || ''}
+              onChange={(e) => setEditingUser(prev => ({ ...prev!, last_name: e.target.value }))}
+              required
+              style={{
+                padding: '8px',
+                borderRadius: '4px',
+                border: '1px solid #d9d9d9',
+                outline: 'none',
+                transition: 'border-color 0.3s',
+              }}
+              onFocus={(e) => e.currentTarget.style.borderColor = '#1890ff'}
+              onBlur={(e) => e.currentTarget.style.borderColor = '#d9d9d9'}
+            />
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px' }}>Email</label>
+            <input
+              type="email"
+              value={editingUser?.emailAddress || ''}
+              onChange={(e) => setEditingUser(prev => ({ ...prev!, emailAddress: e.target.value }))}
+              required
+              style={{
+                padding: '8px',
+                borderRadius: '4px',
+                border: '1px solid #d9d9d9',
+                outline: 'none',
+                transition: 'border-color 0.3s',
+              }}
+              onFocus={(e) => e.currentTarget.style.borderColor = '#1890ff'}
+              onBlur={(e) => e.currentTarget.style.borderColor = '#d9d9d9'}
+            />
+          </div>
+          <Button type="primary" htmlType="submit" style={{ alignSelf: 'flex-end' }}>
+            Save
+          </Button>
+        </form>
+      </Modal>
     </>
   );
 };

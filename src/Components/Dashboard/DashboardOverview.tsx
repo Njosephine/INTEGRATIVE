@@ -10,6 +10,14 @@ interface SalesData {
   sales: number;
 }
 
+// Define the CustomError interface outside of the fetchAnalysisData function
+interface CustomError {
+  response?: {
+    data: any;
+  };
+  message: string;
+}
+
 const Dashboard: React.FC = () => {
   const [dailySales, setDailySales] = useState<number>(0);
   const [weeklySales, setWeeklySales] = useState<number>(0);
@@ -30,8 +38,8 @@ const Dashboard: React.FC = () => {
         const monthlyResponse = await axios.get('http://localhost:5000/api/sales/monthly');
         const ordersResponse = await axios.get('http://localhost:5000/api/orders/total');
         const productsResponse = await axios.get('http://localhost:5000/api/products/total');
-        const usersResponse = await axios.get('http://localhost:5000/api/users/total');
-        
+        const usersResponse = await axios.get('http://localhost:4000/api/user/total');
+
         // Fetch data for charts
         const dailySalesDataResponse = await axios.get('http://localhost:5000/api/sales/daily/last-week');
         const monthlySalesDataResponse = await axios.get('http://localhost:5000/api/sales/monthly/last-year');
@@ -41,14 +49,25 @@ const Dashboard: React.FC = () => {
         setMonthlySales(monthlyResponse.data.monthlySales);
         setTotalOrders(ordersResponse.data.totalOrders);
         setTotalProducts(productsResponse.data.totalProducts);
-        setTotalUsers(usersResponse.data.totalUsers);
+        console.log("Total Users Response:", usersResponse.data);
+        setTotalUsers(usersResponse.data.total);
 
         // Set the data for the graphs
         setDailySalesData(dailySalesDataResponse.data);
         setMonthlySalesData(monthlySalesDataResponse.data);
 
-      } catch {
-        message.error('Failed to fetch sales data');
+      } catch (error: unknown) {
+        const customError = error as CustomError;
+
+        if (customError.response) {
+          console.error('Error fetching analysis data:', customError.response.data);
+          message.error('Failed to fetch sales data');
+          console.error('Error fetching total users:', customError.response.data || customError.message);
+          message.error('Failed to fetch total users');
+        } else {
+          console.error('Error fetching analysis data:', customError.message);
+          message.error('Failed to fetch sales data');
+        }
       }
     };
 

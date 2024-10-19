@@ -13,7 +13,7 @@ const { Header, Sider, Content } = Layout;
 
 const AdminDashboard: React.FC = () => {
     const [selectedMenu, setSelectedMenu] = useState('DashboardOverview');
-    const [imageUrl, setImageUrl] = useState<string | undefined>(undefined); // State for uploaded image URL
+    const [imageUrl, setImageUrl] = useState<string | undefined>(undefined); 
 
     const handleMenuSelect = (menuKey: string) => {
         setSelectedMenu(menuKey);
@@ -69,7 +69,7 @@ const AdminDashboard: React.FC = () => {
                     <Upload
                         name="profile-image"
                         showUploadList={false}
-                        action="http://localhost:5000/api/upload" // API endpoint for uploading the image
+                        action="http://localhost:5000/api/upload" 
                         onChange={handleUpload}
                         accept=".jpg,.png"
                     >

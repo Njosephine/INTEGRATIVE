@@ -24,12 +24,22 @@ const ProductList: React.FC = () => {
   // Fetch product data from the API
   const fetchProducts = async () => {
     try {
-      const response = await axios.get<Product[]>('http://localhost:5000/api/products');
-      setProducts(response.data);
-    } catch {
-      message.error('Failed to fetch products');
+        const response = await axios.get<{ success: boolean; products: Product[] }>('http://localhost:4000/api/products/products');
+
+        // Check if response contains a success flag and products array
+        if (response.data.success && Array.isArray(response.data.products)) {
+            console.log('Fetched Products:', response.data.products); // Log the response data
+            setProducts(response.data.products);
+        } else {
+            console.error('Unexpected response format:', response.data);
+            message.error('Unexpected response format from API');
+        }
+    } catch (error) {
+        console.error('Error fetching products:', error);
+        message.error('Failed to fetch products');
     }
-  };
+};
+
 
   // Fetch products data on component mount
   useEffect(() => {
@@ -52,12 +62,15 @@ const ProductList: React.FC = () => {
   // Handle Update action after editing
   const handleUpdate = async () => {
     try {
-      await axios.put(`http://localhost:5000/api/products/${editingProduct?.productID}`, form.getFieldsValue());
-      message.success('Product updated successfully');
-      fetchProducts(); // Refresh product list
-      setIsEditing(false);
-      setEditingProduct(null);
-    } catch {
+      if (editingProduct) {
+        await axios.put(`http://localhost:5000/api/products/${editingProduct.productID}`, form.getFieldsValue());
+        message.success('Product updated successfully');
+        fetchProducts(); // Refresh product list
+        setIsEditing(false);
+        setEditingProduct(null);
+      }
+    } catch (error) {
+      console.error('Error updating product:', error);
       message.error('Failed to update product');
     }
   };
@@ -68,7 +81,8 @@ const ProductList: React.FC = () => {
       await axios.delete(`http://localhost:5000/api/products/${productID}`);
       message.success('Product deleted successfully');
       fetchProducts(); // Refresh product list
-    } catch {
+    } catch (error) {
+      console.error('Error deleting product:', error);
       message.error('Failed to delete product');
     }
   };
@@ -89,11 +103,7 @@ const ProductList: React.FC = () => {
       dataIndex: 'supplierID',
       key: 'supplierID',
     },
-    {
-      title: 'User ID',
-      dataIndex: 'userID',
-      key: 'userID',
-    },
+   
     {
       title: 'Category ID',
       dataIndex: 'categoryID',
@@ -118,6 +128,14 @@ const ProductList: React.FC = () => {
       title: 'Description',
       dataIndex: 'description',
       key: 'description',
+    },
+    {
+      title: 'Image',
+      dataIndex: 'image',
+      key: 'image',
+      render: (text: string) => (
+        <img src={text} alt="Product" style={{ width: '100px', height: 'auto' }} />
+      ),
     },
     {
       title: 'Actions',

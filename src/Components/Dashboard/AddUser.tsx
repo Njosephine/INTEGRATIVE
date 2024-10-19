@@ -4,8 +4,7 @@ import { UploadOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { UploadFile } from 'antd/es/upload/interface';
 
-interface UserFormValues {
-  userID: string;
+interface Users {
   first_name: string;
   last_name: string;
   emailAddress: string;
@@ -17,15 +16,12 @@ interface UserFormValues {
 }
 
 const AddUser: React.FC = () => {
-  const [form] = Form.useForm<UserFormValues>();
+  const [form] = Form.useForm<Users>();
   const [fileList, setFileList] = useState<UploadFile[]>([]);
 
   // Function to handle form submission
-  const onFinish = async (values: UserFormValues) => {
-    const formData = new FormData();
-
-    // Append form values to formData
-    formData.append('userID', values.userID);
+  const onFinish = async (values: Users) => {
+  const formData = new FormData();
     formData.append('first_name', values.first_name);
     formData.append('last_name', values.last_name);
     formData.append('emailAddress', values.emailAddress);
@@ -34,13 +30,13 @@ const AddUser: React.FC = () => {
     formData.append('role', values.role);
     formData.append('status', values.status);
 
-    // Append image file if uploaded
+    
     if (fileList.length > 0) {
       formData.append('image', fileList[0].originFileObj as File);
     }
 
     try {
-      // Post the formData to the API
+      
       await axios.post('http://localhost:4000/api/user/users', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -75,14 +71,7 @@ const AddUser: React.FC = () => {
         boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)' 
       }}
     >
-      {/* User ID */}
-      <Form.Item 
-        name="userID" 
-        label="User ID" 
-        rules={[{ required: true, message: 'Please enter user ID' }]}
-      >
-        <Input placeholder="Enter user ID" style={{ height: '40px', fontSize: '15px' }} />
-      </Form.Item>
+     
 
       {/* First Name */}
       <Form.Item 
