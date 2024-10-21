@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Table, message } from 'antd';
 
 interface Order {
-    orderID: number;
+    _id: number;
     quantityOrdered: number;
     productName: number;
     orderDate: string;

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Layout, Divider, Avatar, message, Upload } from "antd";
 import { UserOutlined } from "@ant-design/icons";
 import type { UploadChangeParam } from "antd/es/upload";
@@ -18,6 +18,14 @@ const SalesDashboard: React.FC = () => {
     const [selectedMenu, setSelectedMenu] = useState("ManageSales");
     const [imageUrl, setImageUrl] = useState<string | null>(null);
 
+    // Load image URL from localStorage when the component mounts
+    useEffect(() => {
+        const savedImageUrl = localStorage.getItem("profileImageUrl");
+        if (savedImageUrl) {
+            setImageUrl(savedImageUrl);
+        }
+    }, []);
+
     const handleMenuSelect = (menuKey: string) => {
         setSelectedMenu(menuKey);
     };
@@ -29,14 +37,26 @@ const SalesDashboard: React.FC = () => {
             return;
         }
         if (info.file.status === "done") {
-            // Use the originFileObj to create a URL for the uploaded image
-            const imageUrl = URL.createObjectURL(info.file.originFileObj as Blob);
-            setImageUrl(imageUrl);
-            message.success({ content: "Image uploaded successfully!", key: "upload" });
+            console.log("Upload Response:", info.file.response); // Log the complete response
+    
+            // Accessing the imageUrl from the response structure
+            const uploadedImageUrl = info.file.response?.image?.imageUrl; 
+    
+            if (uploadedImageUrl) {
+                setImageUrl(uploadedImageUrl);
+    
+                // Save the image URL to localStorage so it persists across refreshes
+                localStorage.setItem("profileImageUrl", uploadedImageUrl);
+    
+                message.success({ content: "Image uploaded successfully!", key: "upload" });
+            } else {
+                message.error({ content: "No URL in response!", key: "upload" });
+            }
         } else if (info.file.status === "error") {
             message.error({ content: "Image upload failed!", key: "upload" });
         }
     };
+    
 
     const renderContent = () => {
         switch (selectedMenu) {
@@ -79,19 +99,15 @@ const SalesDashboard: React.FC = () => {
                     <Upload
                         name="profile-image"
                         showUploadList={false}
-                        action="http://localhost:5000/api/upload" // API endpoint for uploading the image
+                        action="http://localhost:4000/api/upload/upload" // API endpoint for uploading the image
                         onChange={handleUpload}
                         accept=".jpg,.png"
-                        beforeUpload={() => {
-                            // Optionally restrict uploads, return false to prevent upload
-                            return true; // Allow all uploads
-                        }}
                     >
                         <Avatar 
-                            src={imageUrl ? imageUrl : undefined} 
-                            size={80} 
-                            icon={<UserOutlined />} 
-                            style={{ cursor: "pointer" }} 
+                              src={imageUrl ? imageUrl : undefined} 
+                              size={80} 
+                              icon={<UserOutlined />} 
+                              style={{ cursor: "pointer" }} 
                         />
                     </Upload>
 

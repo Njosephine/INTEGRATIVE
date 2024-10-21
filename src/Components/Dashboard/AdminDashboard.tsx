@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { UserOutlined } from '@ant-design/icons';
 import AdminSidebar from "./AdminSidebar"; // Ensure the component name is correct
 import { Layout, Divider, Avatar, message, Upload } from "antd";
@@ -15,6 +15,14 @@ const AdminDashboard: React.FC = () => {
     const [selectedMenu, setSelectedMenu] = useState('DashboardOverview');
     const [imageUrl, setImageUrl] = useState<string | undefined>(undefined); 
 
+     // Load image URL from localStorage when the component mounts
+     useEffect(() => {
+        const savedImageUrl = localStorage.getItem("profileImageUrl");
+        if (savedImageUrl) {
+            setImageUrl(savedImageUrl);
+        }
+    }, []);
+
     const handleMenuSelect = (menuKey: string) => {
         setSelectedMenu(menuKey);
     };
@@ -26,13 +34,26 @@ const AdminDashboard: React.FC = () => {
             return;
         }
         if (info.file.status === "done") {
-            const imageUrl = URL.createObjectURL(info.file.originFileObj as Blob);
-            setImageUrl(imageUrl);
-            message.success({ content: "Image uploaded successfully!", key: "upload" });
+            console.log("Upload Response:", info.file.response); // Log the complete response
+    
+            // Accessing the imageUrl from the response structure
+            const uploadedImageUrl = info.file.response?.image?.imageUrl; 
+    
+            if (uploadedImageUrl) {
+                setImageUrl(uploadedImageUrl);
+    
+                // Save the image URL to localStorage so it persists across refreshes
+                localStorage.setItem("profileImageUrl", uploadedImageUrl);
+    
+                message.success({ content: "Image uploaded successfully!", key: "upload" });
+            } else {
+                message.error({ content: "No URL in response!", key: "upload" });
+            }
         } else if (info.file.status === "error") {
             message.error({ content: "Image upload failed!", key: "upload" });
         }
     };
+    
 
     const renderContent = () => {
         switch (selectedMenu) {
@@ -69,15 +90,15 @@ const AdminDashboard: React.FC = () => {
                     <Upload
                         name="profile-image"
                         showUploadList={false}
-                        action="http://localhost:5000/api/upload" 
+                        action="http://localhost:4000/api/upload/upload" 
                         onChange={handleUpload}
                         accept=".jpg,.png"
                     >
                         <Avatar 
-                            src={imageUrl} 
-                            size={80} 
-                            icon={<UserOutlined />} 
-                            style={{ cursor: "pointer" }} 
+                           src={imageUrl ? imageUrl : undefined} 
+                           size={80} 
+                           icon={<UserOutlined />} 
+                           style={{ cursor: "pointer" }} 
                         />
                     </Upload>
 

@@ -1,16 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { Form, Input, Button, Select, InputNumber, DatePicker, message } from 'antd';
+import { Form, Button, Select, InputNumber, DatePicker, message } from 'antd';
 import moment from 'moment';
 import axios from 'axios';
 
 interface Product {
-  productID: number; 
+  productID: string; 
   productName: string;
 }
 
 interface SaleFormValues {
-  saleID: string;
-  prodID: string;
+  productID: string;
   quantitySold: number;
   unitPrice: number;
   saleDate: moment.Moment;
@@ -25,9 +24,15 @@ const AddSales: React.FC = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get<Product[]>('http://localhost:5000/api/products');
-        setProducts(response.data);
-      } catch {
+        const response = await axios.get('http://localhost:4000/api/products/products');
+        console.log('Fetched products:', response.data); // Log the fetched data
+
+        if (response.data.success && Array.isArray(response.data.products)) {
+          setProducts(response.data.products); // Access the products array
+        } else {
+          message.error('Invalid product data format');
+        }
+      } catch (error) {
         message.error('Failed to fetch products');
       }
     };
@@ -40,7 +45,7 @@ const AddSales: React.FC = () => {
     console.log('Received values:', values);
     
     try {
-      await axios.post('http://localhost:5000/api/sales', values); 
+      await axios.post('http://localhost:4000/api/sale/sales', values); 
       message.success('Sale added successfully!');
       form.resetFields(); // Reset form after submission
     } catch {
@@ -61,16 +66,9 @@ const AddSales: React.FC = () => {
         boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)' 
       }}
     >
-      {/* Sale ID */}
-      <Form.Item name="saleID" label="Sale ID" rules={[{ required: true, message: 'Please enter sale ID' }]}>
-        <Input 
-          placeholder="Enter sale ID" 
-          style={{ height: '40px', fontSize: '15px' }} 
-        />
-      </Form.Item>
-
       {/* Product Selection */}
-      <Form.Item name="prodID" label="Product" rules={[{ required: true, message: 'Please select a product' }]}>
+      <Form.Item name="productID" label="Product" rules={[{ required: true, message: 'Please select a product' }]}>
+
         <Select 
           placeholder="Select product" 
           style={{ height: '40px', fontSize: '16px' }} // Increased select size
@@ -124,8 +122,8 @@ const AddSales: React.FC = () => {
           placeholder="Select payment status" 
           style={{ height: '40px', fontSize: '16px' }} 
         >
-          <Select.Option value="Paid">Paid</Select.Option>
-          <Select.Option value="Pending">Pending</Select.Option>
+          <Select.Option value="Cash">Cash</Select.Option>
+          <Select.Option value="MobileMoney">MobileMoney</Select.Option>
         </Select>
       </Form.Item>
 

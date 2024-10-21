@@ -21,7 +21,7 @@ const OrderList: React.FC = () => {
   // Fetch sales data from the API
   const fetchOrders = async () => {
     try {
-      const response = await axios.get<Order[]>('http://localhost:5000/api/orders');
+      const response = await axios.get<Order[]>('http://localhost:4000/api/order/orders');
       setOrders(response.data);
     } catch {
       message.error('Failed to fetch sales');
@@ -75,11 +75,7 @@ const OrderList: React.FC = () => {
     }
   };
  const columns = [
-  {
-    title: 'Order ID',
-    dataIndex: 'orderID',
-    key: 'orderID',
-  },
+
   {
     title: 'Quantity Ordered',
     dataIndex: 'quantityOrdered',
@@ -90,11 +86,7 @@ const OrderList: React.FC = () => {
     dataIndex: 'supplierID',
     key: 'supplierID',
   },
-  {
-    title: 'User ID',
-    dataIndex: 'userID',
-    key: 'userID',
-  },
+ 
   {
     title: 'Product ID',
     dataIndex: 'productID',

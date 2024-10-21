@@ -4,11 +4,10 @@ import axios from 'axios';
 import moment from 'moment';
 
 interface Sale {
-  saleID: string;
-  prodID: number;
+  _id: string;
+  productID: number;
   quantitySold: number;
   unitPrice: number;
-  totalPrice: number;
   saleDate: string;
   statusOfPayment: string;
 }
@@ -22,9 +21,17 @@ const SalesList: React.FC = () => {
   // Fetch sales data from the API
   const fetchSales = async () => {
     try {
-      const response = await axios.get<Sale[]>('http://localhost:5000/api/sales');
-      setSales(response.data);
-    } catch {
+      const response = await axios.get<{ success: boolean; sales: Sale[] }>('http://localhost:4000/api/sale/sales');
+      console.log('API Response:', response.data); // Log the full response
+
+      if (response.data.success && Array.isArray(response.data.sales)) {
+        setSales(response.data.sales); // Set sales from the correct property
+        console.log('Sales Data:', response.data.sales); // Log the sales data
+      } else {
+        message.error('Failed to fetch sales');
+      }
+    } catch (error) {
+      console.error('Error fetching sales:', error); // Log any errors
       message.error('Failed to fetch sales');
     }
   };
@@ -39,10 +46,9 @@ const SalesList: React.FC = () => {
     setIsEditing(true);
     setEditingSale(record);
     form.setFieldsValue({
-      prodID: record.prodID,
+      productID: record.productID,
       quantitySold: record.quantitySold,
       unitPrice: record.unitPrice,
-      totalPrice: record.totalPrice,
       saleDate: moment(record.saleDate), // Convert string to moment for DatePicker
       statusOfPayment: record.statusOfPayment,
     });
@@ -51,7 +57,7 @@ const SalesList: React.FC = () => {
   // Handle Update action after editing
   const handleUpdate = async () => {
     try {
-      await axios.put(`http://localhost:5000/api/sales/${editingSale?.saleID}`, {
+      await axios.put(`http://localhost:5000/api/sales/${editingSale?._id}`, {
         ...form.getFieldsValue(),
         saleDate: form.getFieldValue('saleDate').format('YYYY-MM-DD'),
       });
@@ -77,14 +83,9 @@ const SalesList: React.FC = () => {
 
   const columns = [
     {
-      title: 'Sale ID',
-      dataIndex: 'saleID',
-      key: 'saleID',
-    },
-    {
       title: 'Product ID',
-      dataIndex: 'prodID',
-      key: 'prodID',
+      dataIndex: 'productID',
+      key: 'productID',
     },
     {
       title: 'Quantity Sold',
@@ -95,11 +96,6 @@ const SalesList: React.FC = () => {
       title: 'Unit Price',
       dataIndex: 'unitPrice',
       key: 'unitPrice',
-    },
-    {
-      title: 'Total Price',
-      dataIndex: 'totalPrice',
-      key: 'totalPrice',
     },
     {
       title: 'Sale Date',
@@ -119,7 +115,7 @@ const SalesList: React.FC = () => {
           <Button type="primary" onClick={() => handleEdit(record)}>Edit</Button>
           <Popconfirm
             title="Are you sure you want to delete this sale?"
-            onConfirm={() => handleDelete(record.saleID)}
+            onConfirm={() => handleDelete(record._id)}
             okText="Yes"
             cancelText="No"
           >
@@ -135,7 +131,7 @@ const SalesList: React.FC = () => {
       <Table 
         dataSource={sales} 
         columns={columns} 
-        rowKey="saleID" 
+        rowKey="_id" 
         pagination={{ pageSize: 5 }} 
         style={{ marginTop: '20px' }} 
       />
@@ -143,7 +139,7 @@ const SalesList: React.FC = () => {
       {/* Edit Modal */}
       <Modal
         title="Edit Sale"
-        visible={isEditing}
+        open={isEditing}  // Use 'open' instead of 'visible'
         onCancel={() => {
           setIsEditing(false);
           setEditingSale(null);
@@ -151,26 +147,19 @@ const SalesList: React.FC = () => {
         onOk={handleUpdate}
       >
         <Form form={form} layout="vertical">
-          <Form.Item label="Product ID" name="prodID">
+          <Form.Item label="Quantity Sold" name="quantitySold" rules={[{ required: true, message: 'Please input quantity sold!' }]}>
             <InputNumber min={1} />
           </Form.Item>
-          <Form.Item label="Quantity Sold" name="quantitySold">
+          <Form.Item label="Unit Price" name="unitPrice" rules={[{ required: true, message: 'Please input unit price!' }]}>
             <InputNumber min={1} />
           </Form.Item>
-          <Form.Item label="Unit Price" name="unitPrice">
-            <InputNumber min={1} />
-          </Form.Item>
-          <Form.Item label="Total Price" name="totalPrice">
-            <InputNumber min={1} />
-          </Form.Item>
-          <Form.Item label="Sale Date" name="saleDate">
+          <Form.Item label="Sale Date" name="saleDate" rules={[{ required: true, message: 'Please select sale date!' }]}>
             <DatePicker />
           </Form.Item>
-          <Form.Item label="Payment Status" name="statusOfPayment">
+          <Form.Item label="Payment Status" name="statusOfPayment" rules={[{ required: true, message: 'Please select payment status!' }]}>
             <Select>
-              <Select.Option value="Paid">Paid</Select.Option>
-              <Select.Option value="Pending">Pending</Select.Option>
-              <Select.Option value="Overdue">Overdue</Select.Option>
+              <Select.Option value="Cash">Cash</Select.Option>
+              <Select.Option value="MobileMoney">MobileMoney</Select.Option>
             </Select>
           </Form.Item>
         </Form>

@@ -1,41 +1,51 @@
-// src/SupplierDashboard.tsx
-import React, { useState } from "react";
-import { Layout, Divider } from "antd";
+import React, { useState, useEffect } from "react";
+import { Layout, Divider, Avatar, message, Upload } from "antd";
 import { UserOutlined } from '@ant-design/icons';
 import SupplierSidebar from "./SupplierSidebar";
 import Orders from "./Orders";
-
 import FulfilledOrders from "./FulfilledOrders"; 
-import { Avatar, message, Upload } from "antd";
 import type { UploadChangeParam } from "antd/es/upload";
-
-
 
 const { Header, Sider } = Layout;
 
 const SupplierDashboard: React.FC = () => {
     const [selectedMenu, setSelectedMenu] = useState('Orders');
     const [imageUrl, setImageUrl] = useState<string | undefined>(undefined);
-    
 
+    // Load the image URL from localStorage when the component mounts
+    useEffect(() => {
+        const savedImageUrl = localStorage.getItem("profileImageUrl");
+        if (savedImageUrl) {
+            setImageUrl(savedImageUrl); // Set the image URL from localStorage
+        }
+    }, []);
+    
     const handleMenuSelect = (menuKey: string) => {
         setSelectedMenu(menuKey);
     };
 
-     // Handle image upload
-     const handleUpload = (info: UploadChangeParam) => {
+    // Handle image upload
+    const handleUpload = (info: UploadChangeParam) => {
         if (info.file.status === "uploading") {
             message.loading({ content: "Uploading...", key: "upload" });
             return;
         }
         if (info.file.status === "done") {
-            const imageUrl = URL.createObjectURL(info.file.originFileObj as Blob);
-            setImageUrl(imageUrl);
+            // Extract the correct image URL from the response
+            const uploadedImageUrl = info.file.response.image.imageUrl;
+            
+            // Update state with the new image URL
+            setImageUrl(uploadedImageUrl);
+    
+            // Save the uploaded image URL to localStorage
+            localStorage.setItem("profileImageUrl", uploadedImageUrl);
+    
             message.success({ content: "Image uploaded successfully!", key: "upload" });
         } else if (info.file.status === "error") {
             message.error({ content: "Image upload failed!", key: "upload" });
         }
     };
+    
 
     const renderContent = () => {
         switch (selectedMenu) {
@@ -43,9 +53,8 @@ const SupplierDashboard: React.FC = () => {
                 return <Orders />;
             case 'fulfilled-orders':
                 return <FulfilledOrders />;
-            
             default:
-                return <Orders/>;
+                return <Orders />;
         }
     };
 
@@ -67,12 +76,12 @@ const SupplierDashboard: React.FC = () => {
                     <Upload
                         name="profile-image"
                         showUploadList={false}
-                        action="http://localhost:5000/api/upload" // API endpoint for uploading the image
+                        action="http://localhost:4000/api/upload/upload" // API endpoint for uploading the image
                         onChange={handleUpload}
                         accept=".jpg,.png"
                     >
                         <Avatar 
-                            src={imageUrl} 
+                            src={imageUrl ? imageUrl : undefined} 
                             size={80} 
                             icon={<UserOutlined />} 
                             style={{ cursor: "pointer" }} 
