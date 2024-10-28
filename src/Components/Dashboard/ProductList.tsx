@@ -4,10 +4,10 @@ import axios from 'axios';
 
 interface Product {
     productID: string;
-    productName: string;
-    description: string;
-    categoryID: number;
-    supplierID: number;
+    productName: String;
+    description: String;
+    categoryID: String;
+    supplierID: String;
     userID: number;
     quantityAvailable: number;
     purchasePrice: number;
@@ -63,7 +63,7 @@ const ProductList: React.FC = () => {
   const handleUpdate = async () => {
     try {
       if (editingProduct) {
-        await axios.put(`http://localhost:5000/api/products/${editingProduct.productID}`, form.getFieldsValue());
+        await axios.put(`http://localhost:4000/api/products/update/${editingProduct.productID}`, form.getFieldsValue());
         message.success('Product updated successfully');
         fetchProducts(); // Refresh product list
         setIsEditing(false);
@@ -78,7 +78,8 @@ const ProductList: React.FC = () => {
   // Handle Delete action
   const handleDelete = async (productID: string) => {
     try {
-      await axios.delete(`http://localhost:5000/api/products/${productID}`);
+      await axios.delete(`http://localhost:4000/api/products/delete/${productID}`);
+
       message.success('Product deleted successfully');
       fetchProducts(); // Refresh product list
     } catch (error) {
@@ -88,6 +89,11 @@ const ProductList: React.FC = () => {
   };
 
   const columns = [
+    {
+      title: 'No.',
+      key: 'index', // Key for the index column
+      render: (_: any, __: Product, index: number) => index + 1,
+    },
     {
       title: 'Product ID',
       dataIndex: 'productID',

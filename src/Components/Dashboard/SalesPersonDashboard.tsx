@@ -37,8 +37,7 @@ const SalesDashboard: React.FC = () => {
             return;
         }
         if (info.file.status === "done") {
-            console.log("Upload Response:", info.file.response); // Log the complete response
-    
+            console.log("Upload Response:", info.file.response); 
             // Accessing the imageUrl from the response structure
             const uploadedImageUrl = info.file.response?.image?.imageUrl; 
     
@@ -99,7 +98,7 @@ const SalesDashboard: React.FC = () => {
                     <Upload
                         name="profile-image"
                         showUploadList={false}
-                        action="http://localhost:4000/api/upload/upload" // API endpoint for uploading the image
+                        action="http://localhost:4000/api/upload/upload" 
                         onChange={handleUpload}
                         accept=".jpg,.png"
                     >

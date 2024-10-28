@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Table, message, Button, Popconfirm, Modal, Form, InputNumber, DatePicker, Select } from 'antd';
+import { Table, message, Button, Modal, Form, InputNumber, DatePicker, Select } from 'antd';
 import axios from 'axios';
 import moment from 'moment';
 
@@ -22,19 +22,27 @@ const SalesList: React.FC = () => {
   const fetchSales = async () => {
     try {
       const response = await axios.get<{ success: boolean; sales: Sale[] }>('http://localhost:4000/api/sale/sales');
-      console.log('API Response:', response.data); // Log the full response
-
+  
       if (response.data.success && Array.isArray(response.data.sales)) {
-        setSales(response.data.sales); // Set sales from the correct property
-        console.log('Sales Data:', response.data.sales); // Log the sales data
+        const formattedSales = response.data.sales.map(sale => {
+          const saleDateMoment = moment(sale.saleDate);
+          return {
+            ...sale,
+            saleDate: saleDateMoment.format('YYYY-MM-DD'), // Only date
+            time: saleDateMoment.format('HH:mm:ss'), // Separate time
+          };
+        });
+        setSales(formattedSales);
       } else {
         message.error('Failed to fetch sales');
       }
     } catch (error) {
-      console.error('Error fetching sales:', error); // Log any errors
+      console.error('Error fetching sales:', error);
       message.error('Failed to fetch sales');
     }
   };
+  
+  
 
   // Fetch sales data on component mount
   useEffect(() => {
@@ -57,31 +65,45 @@ const SalesList: React.FC = () => {
   // Handle Update action after editing
   const handleUpdate = async () => {
     try {
-      await axios.put(`http://localhost:5000/api/sales/${editingSale?._id}`, {
+      const updatedSale = {
         ...form.getFieldsValue(),
-        saleDate: form.getFieldValue('saleDate').format('YYYY-MM-DD'),
-      });
-      message.success('Sale updated successfully');
-      fetchSales(); // Refresh sales list
-      setIsEditing(false);
-      setEditingSale(null);
-    } catch {
+        saleDate: form.getFieldValue('saleDate').toISOString(), 
+      };
+      
+      // Log the updated data to verify it before sending
+      console.log("Updated Sale Data:", updatedSale);
+  
+      const response = await axios.put(`http://localhost:4000/api/sale/update/${editingSale?._id}`, updatedSale);
+  
+      // Check if the response was successful and proceed
+      if (response.data.success) {
+        message.success('Sale updated successfully');
+  
+        // Update the local sales state immediately for better UX
+        setSales(prevSales =>
+          prevSales.map(sale => sale._id === editingSale?._id ? { ...sale, ...updatedSale } : sale)
+        );
+  
+        // Reset editing state
+        setIsEditing(false);
+        setEditingSale(null);
+      } else {
+        message.error('Failed to update sale');
+      }
+    } catch (error) {
+      console.error('Failed to update sale:', error);
       message.error('Failed to update sale');
     }
   };
+  
 
-  // Handle Delete action
-  const handleDelete = async (saleID: string) => {
-    try {
-      await axios.delete(`http://localhost:5000/api/sales/${saleID}`);
-      message.success('Sale deleted successfully');
-      fetchSales(); // Refresh sales list
-    } catch {
-      message.error('Failed to delete sale');
-    }
-  };
-
+  
   const columns = [
+    {
+      title: 'No.',
+      key: 'index', // Key for the index column
+      render: (_: any, __: Sale, index: number) => index + 1, 
+    },
     {
       title: 'Product ID',
       dataIndex: 'productID',
@@ -103,6 +125,11 @@ const SalesList: React.FC = () => {
       key: 'saleDate',
     },
     {
+      title: 'Time',
+      dataIndex: 'time',
+      
+    },
+    {
       title: 'Payment Status',
       dataIndex: 'statusOfPayment',
       key: 'statusOfPayment',
@@ -113,14 +140,14 @@ const SalesList: React.FC = () => {
       render: (_: unknown, record: Sale) => (
         <div style={{ display: 'flex', gap: '10px' }}>
           <Button type="primary" onClick={() => handleEdit(record)}>Edit</Button>
-          <Popconfirm
+          {/* <Popconfirm
             title="Are you sure you want to delete this sale?"
             onConfirm={() => handleDelete(record._id)}
             okText="Yes"
             cancelText="No"
           >
             <Button danger>Delete</Button>
-          </Popconfirm>
+          </Popconfirm> */}
         </div>
       ),
     },
@@ -139,7 +166,7 @@ const SalesList: React.FC = () => {
       {/* Edit Modal */}
       <Modal
         title="Edit Sale"
-        open={isEditing}  // Use 'open' instead of 'visible'
+        open={isEditing}  
         onCancel={() => {
           setIsEditing(false);
           setEditingSale(null);

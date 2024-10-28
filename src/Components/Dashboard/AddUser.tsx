@@ -37,7 +37,7 @@ const AddUser: React.FC = () => {
 
     try {
       
-      await axios.post('http://localhost:4000/api/user/users', formData, {
+      await axios.post('http://localhost:4000/api/user/add-user', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

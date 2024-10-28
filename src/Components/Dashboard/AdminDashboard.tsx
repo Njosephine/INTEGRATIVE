@@ -90,7 +90,7 @@ const AdminDashboard: React.FC = () => {
                     <Upload
                         name="profile-image"
                         showUploadList={false}
-                        action="http://localhost:4000/api/upload/upload" 
+                        action="http://localhost:4000/apiuser/add-user" 
                         onChange={handleUpload}
                         accept=".jpg,.png"
                     >

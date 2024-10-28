@@ -8,30 +8,34 @@ interface Product {
 }
 
 interface Supplier {
-  supplierID: string; // Change to string based on your API response
-  supplierName: string; // Combine first and last name
+  supplierID: string;
+  supplierName: string;
+}
+
+interface Category {
+  categoryID: string;
+  categoryName: string;
 }
 
 interface OrderFormValues {
   quantityOrdered: number;
   orderDate: string;
   supplierID: string; 
- 
   productID: number;
+  categoryID: string;
 }
 
 const CreateOrders: React.FC = () => {
   const [form] = Form.useForm<OrderFormValues>();
   const [products, setProducts] = useState<Product[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
 
-  // Fetch products and suppliers from the API
+  // Fetch products, suppliers, and categories from the API
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get<{ success: boolean; products: Product[] }>('http://localhost:4000/api/products/products');
-        console.log('Products response:', response.data);
-
+        const response = await axios.get('http://localhost:4000/api/products/products');
         if (response.data.success) {
           setProducts(response.data.products);
         } else {
@@ -46,12 +50,10 @@ const CreateOrders: React.FC = () => {
     const fetchSuppliers = async () => {
       try {
         const response = await axios.get('http://localhost:4000/api/supplier/suppliers');
-        console.log('Suppliers response:', response.data);
-
-        if (Array.isArray(response.data)) { // Ensure the response is an array
+        if (Array.isArray(response.data)) {
           const formattedSuppliers = response.data.map((supplier: any) => ({
-            supplierID: supplier.supplierID, // Use the correct field from your response
-            supplierName: `${supplier.supplier_first_name} ${supplier.supplier_last_name}`, // Combine names
+            supplierID: supplier.supplierID,
+            supplierName: `${supplier.supplier_first_name} ${supplier.supplier_last_name}`,
           }));
           setSuppliers(formattedSuppliers);
         } else {
@@ -63,20 +65,33 @@ const CreateOrders: React.FC = () => {
       }
     };
 
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get('http://localhost:4000/api/category/categories');
+        if (Array.isArray(response.data)) {
+          setCategories(response.data);
+        } else {
+          message.error('Failed to fetch categories');
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        message.error('Failed to fetch categories');
+      }
+    };
+
     fetchProducts();
     fetchSuppliers();
+    fetchCategories();
   }, []);
 
   // Handle form submission
   const onFinish = async (values: OrderFormValues) => {
-    console.log('Received values:', values);
-
     const orderData = {
       quantityOrdered: values.quantityOrdered,
       orderDate: values.orderDate,
       productID: values.productID,
       supplierID: values.supplierID,
-     
+      categoryID: values.categoryID,
     };
 
     try {
@@ -104,7 +119,7 @@ const CreateOrders: React.FC = () => {
     >
       {/* Order Date */}
       <Form.Item name="orderDate" label="Order Date" rules={[{ required: true, message: 'Please enter order date' }]}>
-        <Input type="date" placeholder="Select order date" style={{ height: '40px', fontSize: '15px' }} />
+        <Input type="date" style={{ height: '40px', fontSize: '15px' }} />
       </Form.Item>
 
       {/* Product Selection */}
@@ -124,6 +139,17 @@ const CreateOrders: React.FC = () => {
           {suppliers.map((supplier) => (
             <Select.Option key={supplier.supplierID} value={supplier.supplierID}>
               {supplier.supplierName}
+            </Select.Option>
+          ))}
+        </Select>
+      </Form.Item>
+
+      {/* Category Selection */}
+      <Form.Item name="categoryID" label="Category" rules={[{ required: true, message: 'Please select a category' }]}>
+        <Select placeholder="Select category" style={{ height: '40px', fontSize: '16px' }}>
+          {categories.map((category) => (
+            <Select.Option key={category.categoryID} value={category.categoryID}>
+              {category.categoryName}
             </Select.Option>
           ))}
         </Select>
