@@ -1,11 +1,13 @@
 import UserModel from '../Models/UserModel.js';
 import bcrypt from 'bcrypt';
+import validator from "validator";
+import { v2 as cloudinary } from "cloudinary";
 
 // Retrieve all users
-export const getAllUsers = async (req, res) => {
+const getAllUsers = async (req, res) => {
   try {
-    const users = await UserModel.find();
-    res.json(users);
+    const users = await UserModel.find({}).select('-password');
+    res.json({success: true, users})
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -14,12 +16,13 @@ export const getAllUsers = async (req, res) => {
 
 
 
-// Add a new user with Cloudinary image upload
-export const addUser = async (req, res) => {
+// API to add user
+const addUser = async (req, res) => {
   console.log("Incoming request body:", req.body); 
-  console.log("Incoming file:", req.file); // Logs the uploaded file info
-
+  console.log("Incoming file:", req.file); 
+try{
   const { first_name, last_name, emailAddress, password, userName, role, status } = req.body;
+  const imageFile = req.file
 
   // Validate input
   if (!first_name || !last_name || !emailAddress || !password || !userName || !role || !status) {
@@ -27,10 +30,9 @@ export const addUser = async (req, res) => {
   }
 
   // Validate email format
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(emailAddress)) {
-    return res.status(400).json({ message: "Invalid email format." });
-  }
+if(!validator. isEmail(emailAddress)) {
+  return res.json({sucess: false, message: "Please enter a valid email"})
+}
 
   // Validate password length
   if (password.length < 6) {
@@ -38,13 +40,15 @@ export const addUser = async (req, res) => {
   }
 
   // Hash the password
-  const hashedPassword = await bcrypt.hash(password, 10);
+  const saltRounds = 10
+  const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-  // Check if file is uploaded and retrieve the Cloudinary image URL
-  const image = req.file ? req.file.path : null; 
+   // upload image to cloudinary
+  const imageUpload = await cloudinary.uploader.upload(imageFile.path, { resource_type: "image" })
+  const imageUrl = imageUpload.secure_url
 
   // Create a new user instance with the gathered data
-  const newUser = new UserModel({ 
+  const UserData ={ 
     first_name, 
     last_name, 
     emailAddress, 
@@ -52,19 +56,17 @@ export const addUser = async (req, res) => {
     userName, 
     role, 
     status, 
-    image,
-  });
+    image: imageUrl
+  };
 
-  try {
-    // Save the new user to the database
+ 
+    const newUser = new UserModel(UserData)
     await newUser.save();
-    res.status(201).json(newUser);
+    res.json({ success: true, message: 'User Added'})
+    
   } catch (error) {
-    console.error("Error saving new user:", error);
-    if (error.name === 'ValidationError') {
-      return res.status(400).json({ message: error.message });
-    }
-    res.status(500).json({ message: error.message });
+    console.log(error);
+      res.json({ success: false, message: error.message });
   }
 };
 
@@ -122,3 +124,10 @@ export const getTotalUsers = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export{
+  addUser,
+  getAllUsers
+}
+
+

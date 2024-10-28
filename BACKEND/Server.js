@@ -7,10 +7,10 @@ import ProductRouter from './Routes/ProductRouter.js';
 import CategoryRouter from './Routes/CategoryRouter.js';
 import UserRouter from './Routes/UserRouter.js';
 import SupplierRouter from './Routes/SupplierRouter.js';
-// import multer from 'multer';
+import UploadRouter from './Routes/UploadRouter.js'
 import SalesRouter from './Routes/SalesRouter.js';
 import OrderRouter from './Routes/OrderRouter.js';
-import UploadRouter from './Routes/UploadRouter.js';
+
 
 
 //app config
@@ -35,7 +35,8 @@ app.use('/api/user', UserRouter);
 app.use('/api/supplier', SupplierRouter);
 app.use('/api/sale', SalesRouter);
 app.use('/api/order', OrderRouter);
-app.use('/api/upload', UploadRouter);
+app.use('/api/upload', UploadRouter)
+
 
 
 app.listen(port, ()=> console.log("Server Started", port))

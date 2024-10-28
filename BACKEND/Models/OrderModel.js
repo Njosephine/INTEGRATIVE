@@ -10,23 +10,24 @@ const OrderSchema = new mongoose.Schema({
     required: true,
   },
   productID: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: String,
     ref: 'Product',
     required: true,
   },
   supplierID: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: String,
     ref: 'Supplier',
     required: true,
   },
   categoryID: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: String,
     ref: 'Category',
-    required: true, // If you want to keep this
+    required: true,
   },
   categoryName: {
     type: String,
-    required: true, // If you want to keep this
+    required: false, 
+    default: ''
   }
 }, { timestamps: true });
 

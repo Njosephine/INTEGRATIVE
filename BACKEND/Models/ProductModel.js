@@ -16,12 +16,12 @@ const productSchema = new mongoose.Schema({
     required: true,
   },
   categoryID: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: String,
     ref: 'Category',
     required: true,
   },
   supplierID: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: String,
     ref: 'Supplier',
     required: true,
   },
@@ -42,6 +42,10 @@ const productSchema = new mongoose.Schema({
     type: String, 
     required: true,
   },
+  cancelled: { 
+    type: Boolean,
+    default: false, 
+  }
 }, { timestamps: true });
 
 const ProductModel = mongoose.models.product || mongoose.model("Product", productSchema);

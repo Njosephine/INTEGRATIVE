@@ -34,9 +34,9 @@ const userSchema = new mongoose.Schema({
   },
   image: {
     type: String, 
-    required: false, 
+    required: true, 
   },
-}, { timestamps: true });
+});
 
 const UserModel = mongoose.models.user || mongoose.model("User", userSchema);
 export default UserModel;

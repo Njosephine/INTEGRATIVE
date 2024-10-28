@@ -7,11 +7,9 @@ import SupplierModel from '../Models/SupplierModel.js';
 export const getAllOrders = async (req, res) => {
     try {
       const orders = await OrderModel.find()
-        .populate('productID')
-        .populate('supplierID')
-        .populate('categoryID'); // Populate category if needed
+     
   
-      console.log('Retrieved orders:', orders); // Log the retrieved orders
+      console.log('Retrieved orders:', orders); 
       res.status(200).json(orders);
     } catch (error) {
       console.error('Error retrieving orders:', error);
@@ -20,12 +18,13 @@ export const getAllOrders = async (req, res) => {
   };
   
 
+// Add Order Function
 export const addOrder = async (req, res) => {
   try {
     const { quantityOrdered, orderDate, productID, supplierID } = req.body;
 
-    // Check if product exists and populate category
-    const product = await ProductModel.findOne({ productID }).populate('categoryID');
+    // Check if product exists and get categoryID as a string
+    const product = await ProductModel.findOne({ productID });
     const supplier = await SupplierModel.findOne({ supplierID });
 
     if (!product) {
@@ -40,10 +39,9 @@ export const addOrder = async (req, res) => {
     const newOrder = new OrderModel({
       quantityOrdered,
       orderDate,
-      productID: product._id, 
-      supplierID: supplier._id, 
-      categoryID: product.categoryID, 
-      categoryName: product.categoryID.categoryName, 
+      productID, 
+      supplierID, 
+      categoryID: product.categoryID, // Directly assign the categoryID as a string
     });
 
     await newOrder.save();
@@ -51,5 +49,15 @@ export const addOrder = async (req, res) => {
   } catch (error) {
     console.error('Error while adding order:', error);
     res.status(500).json({ message: 'Error while adding order', error });
+  }
+};
+
+export const getTotalOrders = async (req, res) => {
+  try {
+      const totalOrders = await OrderModel.countDocuments(); 
+      res.json({ success: true, total: totalOrders });
+  } catch (error) {
+      console.error('Error fetching total orders:', error);
+      res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };

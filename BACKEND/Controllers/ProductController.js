@@ -1,29 +1,28 @@
 import ProductModel from "../Models/ProductModel.js"; 
 import SupplierModel from "../Models/SupplierModel.js";
 import CategoryModel from "../Models/CategoryModel.js";
+import { v2 as cloudinary } from "cloudinary";
 
 
 // Add a new product with Cloudinary image upload
-export const addProduct = async (req, res) => {
-    try {
-        const {
-            productID,
-            productName,
-            description,
-            supplierID,
-            quantityAvailable,
-            purchasePrice,
-            sellingPrice,
-            categoryID
-        } = req.body;
+const addProduct = async (req, res) => {
 
-        console.log("Incoming request body:", req.body); 
-        console.log("Incoming file:", req.file); 
-      
+    console.log("Incoming request body:", req.body); 
+    console.log("Incoming file:", req.file); 
+  
+    try {
+        const { productID, productName, description , supplierID, quantityAvailable, purchasePrice, sellingPrice,categoryID } = req.body;
+         const imageFile = req.file
+
+    
         // Check for all required fields
         if (!productID || !productName || !description || !supplierID || !quantityAvailable || !purchasePrice || !sellingPrice || !categoryID) {
             return res.status(400).json({ success: false, message: "Missing required fields" });
         }
+
+         // upload image to cloudinary
+         const imageUpload = await cloudinary.uploader.upload(imageFile.path, { resource_type: "image" })
+         const imageUrl = imageUpload.secure_url
 
         // Check if the supplier and category exist
         const supplier = await SupplierModel.findOne({ supplierID });
@@ -39,21 +38,15 @@ export const addProduct = async (req, res) => {
             productID,
             productName,
             description,
-            supplierID: supplier._id, // Use the ObjectId of the found supplier
-            quantityAvailable: Number(quantityAvailable), // Ensure this is a number
-            purchasePrice: Number(purchasePrice), // Ensure this is a number
-            sellingPrice: Number(sellingPrice), // Ensure this is a number
-            categoryID: category._id, // Use the ObjectId of the found category
+            supplierID,
+            quantityAvailable: Number(quantityAvailable), 
+            purchasePrice: Number(purchasePrice), 
+            sellingPrice: Number(sellingPrice), 
+            categoryID,
+            image: imageUrl
         };
 
-        // Check if file is uploaded and retrieve the image URL
-        const image = req.file ? req.file.path : null; 
-        if (image) {
-            productData.image = image; // Add the image URL to product data if available
-        } else {
-            return res.status(400).json({ success: false, message: "Image file is required" });
-        }
-
+    
         // Log the product data before saving
         console.log("Product Data:", productData);
 
@@ -71,12 +64,9 @@ export const addProduct = async (req, res) => {
 
 
 // Fetch all products
-export const getAllProducts = async (req, res) => {
+ const getAllProducts = async (req, res) => {
     try {
-        const products = await ProductModel.find()
-            .populate('supplierID', 'supplierName') // Adjust as per your supplier schema
-            .populate('categoryID', 'categoryName'); // Adjust as per your category schema
-
+        const products = await ProductModel.find({  cancelled: false });
         res.status(200).json({ success: true, products });
     } catch (error) {
         console.error('Error while fetching products:', error);
@@ -85,7 +75,7 @@ export const getAllProducts = async (req, res) => {
 };
 
 // Fetch a single product by ID
-export const getProductById = async (req, res) => {
+ const getProductById = async (req, res) => {
     const { id } = req.params;
 
     try {
@@ -105,11 +95,11 @@ export const getProductById = async (req, res) => {
 };
 
 // Additional function to filter products by category or other criteria
-export const getProductsByCategory = async (req, res) => {
+ const getProductsByCategory = async (req, res) => {
     const { categoryID } = req.params;
 
     try {
-        const products = await ProductModel.find({ categoryID })
+        const products = await ProductModel.find({ categoryID , cancelled: false })
             .populate('supplierID', 'supplierName') // Adjust as per your supplier schema
             .populate('categoryID', 'categoryName'); // Adjust as per your category schema
 
@@ -120,9 +110,54 @@ export const getProductsByCategory = async (req, res) => {
     }
 };
 
-export default {
+const productDelete  =async (req, res) => {
+    try {
+        const { productID} = req.params
+        await ProductModel.findOneAndDelete( {productID}, { cancelled: true},   { new: true })
+        res.json({success: true, message: 'Product deleted,  successfully'})
+    }catch (error){
+        console.log(error)
+        res.json({success: false, message: error.message}) 
+    }
+}
+
+const updateProduct = async (req, res) => {
+    try {
+        const { productID } = req.params;
+        const updateData = req.body;
+  // Update the product with the new data
+        const updatedProduct = await ProductModel.findOneAndUpdate(
+            { productID },
+            updateData,
+            { new: true, runValidators: true } // Options: return the updated document and run validators
+        );
+
+        res.status(200).json({ success: true, message: 'Product updated successfully', product: updatedProduct });
+    } catch (error) {
+        console.error('Error while updating product:', error);
+        res.status(500).json({ success: false, message: 'Server Error: ' + error.message });
+    }
+};
+
+
+const getTotalProducts = async (req, res) => {
+    try {
+        const totalProducts = await ProductModel.countDocuments(); // Use ProductModel instead of Product
+        res.json({ success: true, total: totalProducts });
+    } catch (error) {
+        console.error('Error fetching total products:', error);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+};
+
+export {
     addProduct,
     getAllProducts,
     getProductById,
     getProductsByCategory,
-};
+    productDelete,
+    updateProduct,
+    getTotalProducts 
+   
+  
+}
